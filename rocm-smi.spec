@@ -1,5 +1,5 @@
 Name:           rocm-smi
-Version:        3.8.0
+Version:        3.9.0
 Release:        1%{?dist}
 Summary:        AMD ROCm System Management Interface
 
@@ -11,6 +11,15 @@ BuildArch:      noarch
 
 BuildRequires:  python3
 BuildRequires:  help2man
+
+# Upstream deprecated this utility in the 3.9.0 release by renaming rocm_smi.py
+# to rocm_smi_deprecated.py in the sample rpm and deb package builds. A comment
+# in python_smi_tools/rocmSmiLib_cli.py from
+# https://github.com/RadeonOpenCompute/rocm_smi_lib/ indicates that interface
+# is supposed to replace this one. Since this tool is now unsupported, it will
+# become less and less useful as time and hardware progress. It should be
+# removed when and if the replacement tool is packaged.
+Provides:       deprecated()
 
 %description
 This package includes the rocm-smi tool. This tool exposes functionality for
@@ -50,5 +59,9 @@ install -t %{buildroot}%{_mandir}/man1 -m 0644 rocm-smi.1
 
 
 %changelog
+* Thu Nov 19 2020 Benjamin A. Beasley <code@musicinmybrain.net> - 3.9.0-1
+- Upstream version 3.9.0 (no changes except deprecation)
+- Deprecate package
+
 * Thu Oct 15 2020 Benjamin A. Beasley <code@musicinmybrain.net> - 3.8.0-1
 - Initial import (#1885684)
