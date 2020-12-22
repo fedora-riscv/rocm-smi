@@ -1,5 +1,5 @@
 Name:           rocm-smi
-Version:        3.10.0
+Version:        4.0.0
 Release:        1%{?dist}
 Summary:        AMD ROCm System Management Interface
 
@@ -59,6 +59,9 @@ install -t %{buildroot}%{_mandir}/man1 -m 0644 rocm-smi.1
 
 
 %changelog
+* Tue Dec 22 2020 Benjamin A. Beasley <code@musicinmybrain.net> - 4.0.0-1
+- Upstream version 4.0.0 (no changes whatsoever, still deprecated)
+
 * Fri Dec 11 2020 Benjamin A. Beasley <code@musicinmybrain.net> - 3.10.0-1
 - Upstream version 3.10.0 (no changes whatsoever, still deprecated)
 
