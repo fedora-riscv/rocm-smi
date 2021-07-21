@@ -1,6 +1,6 @@
 Name:           rocm-smi
 Version:        4.0.0
-Release:        2%{?dist}
+Release:        %autorelease
 Summary:        AMD ROCm System Management Interface
 
 License:        MIT
@@ -59,18 +59,4 @@ install -t %{buildroot}%{_mandir}/man1 -m 0644 rocm-smi.1
 
 
 %changelog
-* Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 4.0.0-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
-
-* Tue Dec 22 2020 Benjamin A. Beasley <code@musicinmybrain.net> - 4.0.0-1
-- Upstream version 4.0.0 (no changes whatsoever, still deprecated)
-
-* Fri Dec 11 2020 Benjamin A. Beasley <code@musicinmybrain.net> - 3.10.0-1
-- Upstream version 3.10.0 (no changes whatsoever, still deprecated)
-
-* Thu Nov 19 2020 Benjamin A. Beasley <code@musicinmybrain.net> - 3.9.0-1
-- Upstream version 3.9.0 (no changes except deprecation)
-- Deprecate package
-
-* Thu Oct 15 2020 Benjamin A. Beasley <code@musicinmybrain.net> - 3.8.0-1
-- Initial import (#1885684)
+%autochangelog
