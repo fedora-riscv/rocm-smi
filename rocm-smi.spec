@@ -9,7 +9,7 @@ Source0:        https://github.com/RadeonOpenCompute/ROC-smi/archive/rocm-%{vers
 
 BuildArch:      noarch
 
-BuildRequires:  python3
+BuildRequires:  python3-devel
 BuildRequires:  help2man
 
 # Upstream deprecated this utility in the 3.9.0 release by renaming rocm_smi.py
