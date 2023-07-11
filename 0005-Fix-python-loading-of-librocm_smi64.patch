@@ -1,0 +1,91 @@
+From 09e71eb34a0e71277bb2fe92fb0a46256f48f95f Mon Sep 17 00:00:00 2001
+From: Jeremy Newton <Jeremy.Newton@amd.com>
+Date: Thu, 29 Jun 2023 16:50:36 -0400
+Subject: [PATCH 5/6] Fix python loading of librocm_smi64
+
+The librocm_smi64.so is used for development, while
+librocm_smi64.so.MAJOR is used for runtime, thus the python front end
+should not be loading the .so binary, but rather the .so.MAJOR binary.
+
+As well, it's good not to hardcode "lib" as some distros will change
+this.
+
+Signed-off-by: Jeremy Newton <Jeremy.Newton@amd.com>
+Change-Id: I7cb745f8936fdf10d3ebd6c1e606031f713184ca
+---
+ .../{rsmiBindings.py => rsmiBindings.py.in}          | 12 ++++++------
+ rocm_smi/CMakeLists.txt                              |  6 +++++-
+ 2 files changed, 11 insertions(+), 7 deletions(-)
+ rename python_smi_tools/{rsmiBindings.py => rsmiBindings.py.in} (98%)
+
+diff --git a/python_smi_tools/rsmiBindings.py b/python_smi_tools/rsmiBindings.py.in
+similarity index 98%
+rename from python_smi_tools/rsmiBindings.py
+rename to python_smi_tools/rsmiBindings.py.in
+index d3a81ee..b6e7f24 100644
+--- a/python_smi_tools/rsmiBindings.py
++++ b/python_smi_tools/rsmiBindings.py.in
+@@ -12,16 +12,16 @@ import os
+ # Use ROCm installation path if running from standard installation
+ # With File Reorg rsmiBindings.py will be installed in  /opt/rocm/libexec/rocm_smi.
+ # relative path changed accordingly
+-path_librocm = os.path.dirname(os.path.realpath(__file__)) + '/../../lib/librocm_smi64.so'
++path_librocm = os.path.dirname(os.path.realpath(__file__)) + '/../../@CMAKE_INSTALL_LIBDIR@/librocm_smi64.so.@VERSION_MAJOR@'
+ if not os.path.isfile(path_librocm):
+     print('Unable to find %s . Trying /opt/rocm*' % path_librocm)
+     for root, dirs, files in os.walk('/opt', followlinks=True):
+-        if 'librocm_smi64.so' in files:
+-            path_librocm = os.path.join(os.path.realpath(root), 'librocm_smi64.so')
++        if 'librocm_smi64.so.@VERSION_MAJOR@' in files:
++            path_librocm = os.path.join(os.path.realpath(root), 'librocm_smi64.so.@VERSION_MAJOR@')
+     if os.path.isfile(path_librocm):
+         print('Using lib from %s' % path_librocm)
+     else:
+-        print('Unable to find librocm_smi64.so')
++        print('Unable to find librocm_smi64.so.@VERSION_MAJOR@')
+ 
+ # ----------> TODO: Support static libs as well as SO
+ 
+@@ -30,7 +30,7 @@ try:
+     rocmsmi = CDLL(path_librocm)
+ except OSError:
+     print('Unable to load the rocm_smi library.\n'\
+-          'Set LD_LIBRARY_PATH to the folder containing librocm_smi64.\n'\
++          'Set LD_LIBRARY_PATH to the folder containing librocm_smi64.so.@VERSION_MAJOR@\n'\
+           '{0}Please refer to https://github.com/'\
+           'RadeonOpenCompute/rocm_smi_lib for the installation guide.{1}'\
+           .format('\33[33m', '\033[0m'))
+@@ -638,4 +638,4 @@ rsmi_nps_mode_type = rsmi_nps_mode_type_t
+ # Usage example to get corresponding names:
+ # nps_mode_type_l[rsmi_nps_mode_type_t.RSMI_MEMORY_PARTITION_NPS2]
+ # will return string 'NPS2'
+-nps_mode_type_l = ['NPS1', 'NPS2', 'NPS4', 'NPS8']
+\ No newline at end of file
++nps_mode_type_l = ['NPS1', 'NPS2', 'NPS4', 'NPS8']
+diff --git a/rocm_smi/CMakeLists.txt b/rocm_smi/CMakeLists.txt
+index 30e2249..87ffe19 100755
+--- a/rocm_smi/CMakeLists.txt
++++ b/rocm_smi/CMakeLists.txt
+@@ -54,6 +54,10 @@ set(${ROCM_SMI}_VERSION_PATCH "0")
+ set(${ROCM_SMI}_VERSION_BUILD "0")
+ message("SOVERSION: ${SO_VERSION_STRING}")
+ 
++# Configure rsmiBindings.py.in with SO major version:
++configure_file(
++  "${COMMON_SRC_ROOT}/python_smi_tools/rsmiBindings.py.in"
++  "${CMAKE_CURRENT_BINARY_DIR}/rsmiBindings.py")
+ 
+ # Create a configure file to get version info from within library
+ configure_file(
+@@ -134,7 +138,7 @@ install(FILES ${COMMON_SRC_ROOT}/include/rocm_smi/${ROCM_SMI_TARGET}Config.h
+ install(FILES ${COMMON_SRC_ROOT}/include/rocm_smi/kfd_ioctl.h
+         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocm_smi
+         COMPONENT dev)
+-install(PROGRAMS ${COMMON_SRC_ROOT}/python_smi_tools/rsmiBindings.py
++install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/rsmiBindings.py
+         DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/${ROCM_SMI}
+         COMPONENT dev)
+ install(PROGRAMS ${COMMON_SRC_ROOT}/python_smi_tools/rocm_smi.py
+-- 
+2.40.1
+

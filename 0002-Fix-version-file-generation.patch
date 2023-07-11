@@ -1,0 +1,41 @@
+From 1a86dd75bbb2561335a8e900ad9711dd5ed9b8db Mon Sep 17 00:00:00 2001
+From: Jeremy Newton <Jeremy.Newton@amd.com>
+Date: Fri, 23 Jun 2023 13:54:01 -0400
+Subject: [PATCH 2/6] Fix version file generation
+
+This looks like a typo, as the following variables are not defined:
+- AMD_SMI_LIBS_TARGET_VERSION_MAJOR
+- AMD_SMI_LIBS_TARGET_VERSION_MINOR
+- AMD_SMI_LIBS_TARGET_VERSION_PATCH
+
+Change-Id: I43449e7bd2a2de643d33e79fad063a7859679c8d
+Signed-off-by: Jeremy Newton <Jeremy.Newton@amd.com>
+---
+ CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 967033d..b0b1dce 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -232,7 +232,7 @@ configure_package_config_file(
+ 
+ write_basic_package_version_file(
+     ${CMAKE_CURRENT_BINARY_DIR}/rocm_smi-config-version.cmake
+-    VERSION "${AMD_SMI_LIBS_TARGET_VERSION_MAJOR}.${AMD_SMI_LIBS_TARGET_VERSION_MINOR}.${AMD_SMI_LIBS_TARGET_VERSION_PATCH}"
++    VERSION "${PKG_VERSION_STR}"
+     COMPATIBILITY SameMajorVersion
+     )
+ 
+@@ -247,7 +247,7 @@ install(
+ # Create cmake target
+ # Add all targets to the build-tree export set
+ export(TARGETS ${ROCM_SMI_TARGET} ${OAM_TARGET}
+-  FILE "${PROJECT_BINARY_DIR}/rcom_smi_target.cmake")
++  FILE "${PROJECT_BINARY_DIR}/rocm_smi_target.cmake")
+ 
+ # Export the package for use from the build-tree
+ # (this registers the build-tree with a global CMake-registry)
+-- 
+2.40.1
+

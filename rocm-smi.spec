@@ -1,63 +1,105 @@
-Name:           rocm-smi
-Version:        4.0.0
-Release:        %autorelease
-Summary:        AMD ROCm System Management Interface
+%global rocm_release 5.6
+%global rocm_patch 0
+%global rocm_version %{rocm_release}.%{rocm_patch}
+%global upstreamname rocm_smi_lib
 
-# SPDX
-License:        MIT
-URL:            https://github.com/RadeonOpenCompute/ROC-smi
-Source0:        https://github.com/RadeonOpenCompute/ROC-smi/archive/rocm-%{version}.tar.gz
+Name:       rocm-smi
+Version:    %{rocm_version}
+Release:    1%{?dist}
+Summary:    ROCm System Management Interface Library
 
-BuildArch:      noarch
+License:    NCSA and MIT and BSD
+URL:        https://github.com/RadeonOpenCompute/%{upstreamname}
+Source0:    %{url}/archive/refs/tags/rocm-%{version}.tar.gz#/%{upstreamname}-%{version}.tar.gz
 
-BuildRequires:  python3-devel
-BuildRequires:  help2man
+# I've sent these patches upstream by email and have been merged into 5.7:
+Patch0:     0001-Fix-python-script-install-permissions.patch
+Patch1:     0002-Fix-version-file-generation.patch
+Patch2:     0003-Update-default-version-to-match-tags.patch
+Patch3:     0004-Improve-handling-of-ContructBDFID-errors.patch
+Patch4:     0005-Fix-python-loading-of-librocm_smi64.patch
+Patch5:     0006-Only-install-asan-license-if-enabled.patch
 
-# Upstream deprecated this utility in the 3.9.0 release by renaming rocm_smi.py
-# to rocm_smi_deprecated.py in the sample rpm and deb package builds. A comment
-# in python_smi_tools/rocmSmiLib_cli.py from
-# https://github.com/RadeonOpenCompute/rocm_smi_lib/ indicates that interface
-# is supposed to replace this one. Since this tool is now unsupported, it will
-# become less and less useful as time and hardware progress. It should be
-# removed when and if the replacement tool is packaged.
-Provides:       deprecated()
+# SMI requires the AMDGPU kernel module, which only builds on:
+ExclusiveArch:  x86_64 aarch64 ppc64le
+
+BuildRequires:  cmake
+# Fedora 38 has doxygen 1.9.6
+%if 0%{?fedora} > 38
+BuildRequires:  doxygen >= 1.9.7
+BuildRequires:  doxygen-latex >= 1.9.7
+%endif
+BuildRequires:  gcc-c++
 
 %description
-This package includes the rocm-smi tool. This tool exposes functionality for
-clock and temperature management of your ROCm enabled system.
+The ROCm System Management Interface Library, or ROCm SMI library, is part of
+the Radeon Open Compute ROCm software stack . It is a C library for Linux that
+provides a user space interface for applications to monitor and control GPU
+applications.
 
+%package devel
+Summary: ROCm SMI Library development files
+Requires: %{name}%{?_isa} = %{version}-%{release}
+
+%description devel
+ROCm System Management Interface Library development files
 
 %prep
-%autosetup -n ROC-smi-rocm-%{version}
+%autosetup -n %{upstreamname}-rocm-%{version} -p1
 
+# Don't change default C FLAGS and CXX FLAGS:
+sed -i '/CMAKE_C.*_FLAGS/d' CMakeLists.txt
 
 %build
-# Generate a man page from the --help output.
-help2man --version-string=%{version} --no-info --section=1 \
-    --output=rocm-smi.1 ./rocm-smi
-# Strip out ROCM-SMI and kernel version numbers that pertain to the build
-# environment.
-sed -r 's/[[:blank:]]+\|[[:blank:]].*version:.*$//' -i rocm-smi.1
-
+%cmake -DFILE_REORG_BACKWARD_COMPATIBILITY=OFF
+%cmake_build
 
 %install
-install -d %{buildroot}%{_bindir}
-install rocm_smi.py %{buildroot}%{_bindir}/rocm-smi
-install -d %{buildroot}%{_mandir}/man1
-install -t %{buildroot}%{_mandir}/man1 -m 0644 rocm-smi.1
+%cmake_install
 
-
-# We do not run the tests because they are not self-contained: they require
-# particular hardware to be installed, issue commands to that hardware, and may
-# require elevated privileges.
-
+# For Fedora < 38, the README is not installed if doxygen is disabled:
+install -D -m 644 README.md %{buildroot}%{_docdir}/rocm_smi/README.md
 
 %files
-%license LICENSE
-%doc README.md
+%doc %{_docdir}/rocm_smi
+%license License.txt
 %{_bindir}/rocm-smi
-%{_mandir}/man1/rocm-smi.1*
+%{_libexecdir}/rocm_smi
+%{_libdir}/librocm_smi64.so.5{,.*}
+%{_libdir}/liboam.so.1{,.*}
+%exclude %{_docdir}/rocm_smi/LICENSE.txt
 
+%files devel
+%{_includedir}/rocm_smi/
+%{_includedir}/oam/
+%{_libdir}/librocm_smi64.so
+%{_libdir}/liboam.so
+%{_libdir}/cmake/rocm_smi/
 
 %changelog
-%autochangelog
+* Thu Jun 29 2023 Jeremy Newton <alexjnewt at hotmail dot com> - 5.6.0-1
+- Update to 5.6.0
+- Replace fixes with upstream patches
+
+* Sun Jun 25 2023 Jeremy Newton <alexjnewt at hotmail dot com> - 5.5.1-2
+- Rename to rocm-smi to replace existing retired package
+- Add patches to fix soversion
+
+* Fri Jun 23 2023 Jeremy Newton <alexjnewt at hotmail dot com> - 5.5.1-1
+- Complete rewrite of spec file (start from scratch)
+
+* Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 4.0.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+ 
+* Tue Dec 22 2020 Benjamin A. Beasley <code@musicinmybrain.net> - 4.0.0-1
+- Upstream version 4.0.0 (no changes whatsoever, still deprecated)
+ 
+* Fri Dec 11 2020 Benjamin A. Beasley <code@musicinmybrain.net> - 3.10.0-1
+- Upstream version 3.10.0 (no changes whatsoever, still deprecated)
+ 
+* Thu Nov 19 2020 Benjamin A. Beasley <code@musicinmybrain.net> - 3.9.0-1
+- Upstream version 3.9.0 (no changes except deprecation)
+- Deprecate package
+ 
+* Thu Oct 15 2020 Benjamin A. Beasley <code@musicinmybrain.net> - 3.8.0-1
+- Initial import (#1885684)
