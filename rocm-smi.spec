@@ -1,5 +1,5 @@
-%global rocm_release 5.7
-%global rocm_patch 1
+%global rocm_release 6.0
+%global rocm_patch 0
 %global rocm_version %{rocm_release}.%{rocm_patch}
 %global upstreamname rocm_smi_lib
 
@@ -57,7 +57,7 @@ install -D -m 644 README.md %{buildroot}%{_docdir}/rocm_smi/README.md
 %license License.txt
 %{_bindir}/rocm-smi
 %{_libexecdir}/rocm_smi
-%{_libdir}/librocm_smi64.so.5{,.*}
+%{_libdir}/librocm_smi64.so.1{,.*}
 %{_libdir}/liboam.so.1{,.*}
 %exclude %{_docdir}/rocm_smi/LICENSE.txt
 
