@@ -5,7 +5,7 @@
 
 Name:       rocm-smi
 Version:    %{rocm_version}
-Release:    1%{?dist}
+Release:    1.rv64%{?dist}
 Summary:    ROCm System Management Interface Library
 
 License:    NCSA and MIT and BSD
@@ -13,7 +13,7 @@ URL:        https://github.com/RadeonOpenCompute/%{upstreamname}
 Source0:    %{url}/archive/refs/tags/rocm-%{version}.tar.gz#/%{upstreamname}-%{version}.tar.gz
 
 # SMI requires the AMDGPU kernel module, which only builds on:
-ExclusiveArch:  x86_64 aarch64 ppc64le
+ExclusiveArch:  x86_64 aarch64 ppc64le riscv64
 
 BuildRequires:  cmake
 # Fedora 38 has doxygen 1.9.6
@@ -69,6 +69,9 @@ install -D -m 644 README.md %{buildroot}%{_docdir}/rocm_smi/README.md
 %{_libdir}/cmake/rocm_smi/
 
 %changelog
+* Tue Jan 9 2024 Guoguo <i@qwq.trade> - 5.7.1-1.rv64
+- Add support for riscv64
+
 * Thu Oct 19 2023 Jeremy Newton <alexjnewt at hotmail dot com> - 5.7.1-1
 - Update to 5.7.1
 
